@@ -106,7 +106,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     }
   } // called on every keystroke
 
-  void _saveNote() {
+  Future<void> _saveNote() async {
     for (int i = 0; i < _bodyBlocks.length; i++) {
       _bodyBlocks[i] = Block(
         type: _bodyBlocks[i].type,
@@ -127,17 +127,13 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
     final provider = context.read<NoteProvider>();
     if (widget.note != null) {
-      provider.updateNote(noteToSave);
+      await provider.updateNote(noteToSave);
     } else {
-      provider.createNote(noteToSave);
+      await provider.createNote(noteToSave);
     }
-    setState(() {
-      _isChanged = false;
-      _originalNote = noteToSave;
-    });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Đã lưu.')));
+    // if (mounted) {
+    //   Navigator.of(context).pop(true); // exit edit page
+    // }
   }
 
   String _formatDateTime(DateTime? dateTime) {
@@ -154,9 +150,11 @@ class _NoteEditPageState extends State<NoteEditPage> {
         title: 'Xóa ghi chú?',
         message: 'Bạn có chắc chắn muốn xóa không?',
         confirmText: 'Xóa',
-        onConfirm: () {
-          context.read<NoteProvider>().deleteNote(widget.note!);
-          Navigator.of(context).pop(true);
+        onConfirm: () async {
+          await context.read<NoteProvider>().deleteNote(widget.note!);
+          if (mounted) {
+            Navigator.of(context).pop(true); // Indicate that a deletion occurred
+          }
         },
       );
     }
@@ -166,9 +164,9 @@ class _NoteEditPageState extends State<NoteEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
+        title: Column(
           mainAxisAlignment: MainAxisAlignment.start,
-          spacing: 32.0,
+          spacing: 16.0,
           children: [
             Text(
               widget.note != null ? 'Chỉnh sửa ghi chú' : 'Tạo ghi chú',

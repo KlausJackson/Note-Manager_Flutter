@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:noteapp/core/network/api_client.dart';
 import 'package:noteapp/features/notes/data/models/note_model.dart';

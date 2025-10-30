@@ -30,13 +30,17 @@ class NoteRepositoryImpl implements NoteRepository {
     String? query,
     String sortBy = 'updatedAt',
     int sortOrder = 1,
-    int page = 0,
+    int page = 1,
     int pageSize = 20,
     bool isDeleted = false,
   }) {
     List<NoteModel> filteredNotes = notes
         .where((note) => note.isDeleted == isDeleted)
         .toList();
+
+    if (filteredNotes.isEmpty) {
+      return [];
+    }
 
     // 1. --- FILTERING ---
     if (query != null && query.isNotEmpty) {
@@ -107,7 +111,7 @@ class NoteRepositoryImpl implements NoteRepository {
     // save noteToSave to local
 
     NoteModel noteToSave = noteModel;
-    if (await networkInfo.isConnected) {
+    if (await networkInfo.isConnected && user != 'default') {
       try {
         noteToSave = await apiCall(noteModel);
         await authLocal.updateLastSynced(
@@ -173,11 +177,13 @@ class NoteRepositoryImpl implements NoteRepository {
     return {'notes': notes, 'total': localNotes.length};
   }
 
+// still has error: notemodel is not a subtype of map string dynamic
+// suddenly fixed?
   @override
-  Future<void> syncNotes() async {
+  Future<bool> syncNotes() async {
     final user = await _getCurrentUser();
     if (!await networkInfo.isConnected || user == 'default') {
-      return;
+      return false;
     }
 
     // 2. PREPARE DATA
@@ -225,6 +231,7 @@ class NoteRepositoryImpl implements NoteRepository {
       // 4. UPDATE LOCAL DATABASE
       await noteLocal.upsertNotes(user, serverNotes);
       await authLocal.updateLastSynced(user, newTimestamp);
+      return true;
     } catch (e) {
       rethrow;
     }
@@ -236,7 +243,7 @@ class NoteRepositoryImpl implements NoteRepository {
     bool isDeleted,
   ) async {
     final user = await _getCurrentUser();
-    if (await networkInfo.isConnected) {
+    if (await networkInfo.isConnected && user != 'default') {
       try {
         await apiCall(note.uuid);
         await authLocal.updateLastSynced(
@@ -261,7 +268,7 @@ class NoteRepositoryImpl implements NoteRepository {
       isDeleted: isDeleted,
       updatedAt: DateTime.now(),
     );
-    
+
     await noteLocal.upsertNote(user, deletedNote);
   }
 
@@ -280,7 +287,7 @@ class NoteRepositoryImpl implements NoteRepository {
   @override
   Future<bool> permanentlyDeleteNote(Note note) async {
     final user = await _getCurrentUser();
-    if (await networkInfo.isConnected) {
+    if (await networkInfo.isConnected && user != 'default') {
       try {
         await noteRemote.permanentlyDeleteNote(note.uuid);
         await authLocal.updateLastSynced(

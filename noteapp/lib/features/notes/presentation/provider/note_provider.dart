@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:noteapp/features/auth/presentation/provider/auth_provider.dart';
 
 // entity
 import 'package:noteapp/features/notes/domain/entities/note.dart';
@@ -37,12 +38,33 @@ class NoteProvider with ChangeNotifier {
     required this.getTrashedNotesUsecase,
   });
 
+  void setAuthProvider(AuthProvider authProvider) {
+    _authProvider = authProvider;
+    _authProvider.addListener(_onUserChanged);
+    _currentUser = _authProvider.currentUser;
+  }
+
+  void _onUserChanged() {
+    if (_authProvider.currentUser != _currentUser) {
+      getNotes('', 'updatedAt', 1, 1, 20);
+      _currentUser = _authProvider.currentUser;
+    }
+  }
+
+  @override
+  void dispose() {
+    _authProvider.removeListener(_onUserChanged);
+    super.dispose();
+  }
+
   // --- State Properties ---
+  late AuthProvider _authProvider;
   NoteStatus _status = NoteStatus.initial;
   String _message = '';
   List<Note> _notes = [];
   List<Note> _trashedNotes = [];
   int _totalNotes = 0;
+  String _currentUser = 'default';
 
   // --- Getters ---
   NoteStatus get status => _status;
@@ -55,6 +77,22 @@ class NoteProvider with ChangeNotifier {
     final msg = _message;
     _message = '';
     return msg;
+  }
+
+  // --- Private Helper Methods ---
+  void _setMessage(String msg, bool isError) {
+    _status = isError ? NoteStatus.error : NoteStatus.success;
+    _message = msg;
+  }
+
+  Future<void> _execute(Future<void> Function() action, String success) async {
+    try {
+      await action();
+      _setMessage(success, false);
+    } catch (e) {
+      _setMessage('Có lỗi: $e', true);
+    }
+    notifyListeners();
   }
 
   // --- Public Methods for the UI to Call ---
@@ -81,40 +119,23 @@ class NoteProvider with ChangeNotifier {
       _totalNotes = result['total'];
       _status = NoteStatus.success;
     } catch (e) {
-      _status = NoteStatus.error;
-      _message = e.toString();
+      _setMessage('Có lỗi khi lấy ghi chú: $e', true);
     }
     notifyListeners();
   }
 
   Future<void> createNote(Note note) async {
-    try {
-      final createdNote = await createNoteUsecase(note);
-      _notes.insert(0, createdNote); // update UI
-      _status = NoteStatus.success;
-      _totalNotes++;
-      notifyListeners();
-    } catch (e) {
-      _status = NoteStatus.error;
-      _message = 'Có lỗi khi tạo ghi chú: $e';
-      notifyListeners();
-    }
+    await _execute(() async {
+      await createNoteUsecase(note);
+      await getNotes('', 'updatedAt', 1, 1, 20);
+    }, 'Đã tạo ghi chú mới.');
   }
 
   Future<void> updateNote(Note note) async {
-    try {
-      final updatedNote = await updateNoteUsecase(note);
-      final index = _notes.indexWhere((n) => n.uuid == updatedNote.uuid);
-      if (index != -1) {
-        _notes[index] = updatedNote; // update UI
-        notifyListeners();
-      }
-      _status = NoteStatus.success;
-    } catch (e) {
-      _status = NoteStatus.error;
-      _message = 'Có lỗi khi cập nhật ghi chú: $e';
-      notifyListeners();
-    }
+    await _execute(() async {
+      await updateNoteUsecase(note);
+      await getNotes('', 'updatedAt', 1, 1, 20);
+    }, 'Đã cập nhật ghi chú.');
   }
 
   void clearNotes() {
@@ -126,15 +147,13 @@ class NoteProvider with ChangeNotifier {
     _status = NoteStatus.loading;
     notifyListeners();
 
-    try {
-      await syncNotesUsecase();
+    await _execute(() async {
+      bool isSucceed = await syncNotesUsecase();
+      if (!isSucceed) {
+        throw Exception('Không thể đồng bộ hóa ghi chú.');
+      }
       await getNotes('', 'updatedAt', 1, 1, 20); // refresh notes
-      _status = NoteStatus.success;
-    } catch (e) {
-      _status = NoteStatus.error;
-      _message = 'Có lỗi khi đồng bộ hóa ghi chú: $e';
-    }
-    notifyListeners();
+    }, 'Đã đồng bộ hóa ghi chú.');
   }
 
   Future<void> getTrashedNotes() async {
@@ -145,52 +164,40 @@ class NoteProvider with ChangeNotifier {
       _trashedNotes = await getTrashedNotesUsecase();
       _status = NoteStatus.success;
     } catch (e) {
-      _status = NoteStatus.error;
-      _message = 'Không thể lấy danh sách thùng rác ghi chú: $e';
+      _setMessage('Có lỗi khi xem thùng rác: $e', true);
     }
     notifyListeners();
   }
 
   Future<void> deleteNote(Note note) async {
-    try {
-      await deleteNoteUsecase(note);
-      notes.removeWhere((n) => n.uuid == note.uuid); // update UI
+    await _execute(() async {
+      bool isSuccess = await deleteNoteUsecase(note);
+      if (!isSuccess) {
+        throw Exception('Không thể xóa ghi chú.');
+      }
+      _notes.removeWhere((n) => n.uuid == note.uuid);
       _totalNotes--;
-      _status = NoteStatus.success;
-      _message = 'Ghi chú được chuyển vào thùng rác.';
-    } catch (e) {
-      _status = NoteStatus.error;
-      _message = 'Xóa ghi chú thât bại: $e';
-    }
+    }, 'Ghi chú được chuyển vào thùng rác.');
     notifyListeners();
   }
 
   Future<void> restoreNote(Note note) async {
-    try {
-      await restoreNoteUsecase(note);
-      _trashedNotes.removeWhere((n) => n.uuid == note.uuid); // update UI
-      // notes.insert(0, note);
-      // totalNotes++;
-      // ???
-      _status = NoteStatus.success;
-      _message = 'Ghi chú đã được khôi phục.';
-    } catch (e) {
-      _status = NoteStatus.error;
-      _message = 'Khôi phục ghi chú thất bại: $e';
-    }
-    notifyListeners();
+    await _execute(() async {
+      bool isSuccess = await restoreNoteUsecase(note);
+      if (!isSuccess) {
+        throw Exception('Không thể khôi phục ghi chú.');
+      }
+      await getTrashedNotes(); // refresh trashed notes
+    }, 'Đã khôi phục ghi chú từ thùng rác.');
   }
 
   Future<void> permanentlyDeleteNote(Note note) async {
-    try {
-      await permanentlyDeleteNoteUsecase(note);
-      _trashedNotes.removeWhere((n) => n.uuid == note.uuid); // update UI
-      _status = NoteStatus.success;
-      _message = 'Ghi chú đã được xóa vĩnh viễn.';
-    } catch (e) {
-      _status = NoteStatus.error;
-      _message = 'Xóa vĩnh viễn ghi chú thất bại: $e';
-    }
-    notifyListeners();
+    await _execute(() async {
+      bool isSuccess = await permanentlyDeleteNoteUsecase(note);
+      if (!isSuccess) {
+        throw Exception('Không thể xóa vĩnh viễn ghi chú.');
+      }
+      await getTrashedNotes(); // refresh trashed notes
+    }, 'Đã xóa vĩnh viễn ghi chú.');
   }
 }

@@ -11,7 +11,7 @@ abstract class NoteRepository {
   Future<List<Note>> getTrashedNotes();
   Future<Note> createNote(Note note);
   Future<Note> updateNote(Note note);
-  Future<void> syncNotes();
+  Future<bool> syncNotes();
   // send note to server, server sends back the note
   // (with changes like updatedAt timestamp or trimmed fields)
   // save that note from server to local db

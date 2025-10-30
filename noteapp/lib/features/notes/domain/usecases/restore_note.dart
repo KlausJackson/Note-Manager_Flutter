@@ -5,7 +5,7 @@ class RestoreNote {
   final NoteRepository noteRepository;
   RestoreNote({required this.noteRepository});
 
-  Future<void> call(Note note) async {
-    await noteRepository.restoreNote(note);
+  Future<bool> call(Note note) async {
+    return await noteRepository.restoreNote(note);
   }
 }

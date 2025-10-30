@@ -4,7 +4,7 @@ class SyncNotes {
   final NoteRepository noteRepository;
   SyncNotes({required this.noteRepository});
 
-  Future<void> call() async {
+  Future<bool> call() async {
     return await noteRepository.syncNotes();
   }
 }

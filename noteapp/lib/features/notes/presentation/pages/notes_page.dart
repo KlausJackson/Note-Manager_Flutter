@@ -170,7 +170,40 @@ class _NotesPageState extends State<NotesPage> {
         itemCount: provider.notes.length,
         itemBuilder: (context, index) {
           final note = provider.notes[index];
-          return NoteCard(note: note);
+          return Dismissible(
+            key: Key(note.uuid),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const Icon(Icons.delete, color: Colors.white),
+            ),
+            confirmDismiss: (direction) async {
+              return await showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Xác nhận xóa'),
+                  content:
+                      const Text('Bạn có chắc chắn muốn xóa ghi chú này?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('Hủy'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('Xóa'),
+                    ),
+                  ],
+                ),
+              );
+            },
+            onDismissed: (direction) async {
+              await provider.deleteNote(note);
+            },
+            child: NoteCard(note: note),
+          );
         },
       ),
     );
