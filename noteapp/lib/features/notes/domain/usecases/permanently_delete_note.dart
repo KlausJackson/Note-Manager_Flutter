@@ -6,6 +6,6 @@ class PermanentlyDeleteNote {
   PermanentlyDeleteNote({required this.noteRepository});
 
   Future<void> call(Note note) async {
-    await noteRepository.permanentlyDeleteNote(note.uuid);
+    await noteRepository.permanentlyDeleteNote(note);
   }
 }

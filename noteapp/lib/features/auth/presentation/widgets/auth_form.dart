@@ -90,7 +90,7 @@ class _AuthFormState extends State<AuthForm> {
             }
             return ElevatedButton(
               onPressed: _submit,
-              child: Text(_isLogin ? 'Dang nhap' : 'Dang ky'),
+              child: Text(_isLogin ? 'Đăng nhập' : 'Đăng ký'),
             );
           },
         ),
@@ -100,12 +100,12 @@ class _AuthFormState extends State<AuthForm> {
           children: [
             TextButton(
               onPressed: () => setState(() => _isLogin = !_isLogin),
-              child: Text(_isLogin ? 'Dang ky' : 'Dang nhap'),
+              child: Text(_isLogin ? 'Đăng ký' : 'Đăng nhập'),
             ),
             TextButton(
               onPressed: () => context.read<AuthProvider>().logout(),
               child: const Text(
-                'Dang xuat',
+                'Đăng xuất',
                 style: TextStyle(color: Colors.redAccent),
               ),
             ),

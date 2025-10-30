@@ -11,7 +11,7 @@ class NoteLocal {
     return box.values.toList();
   }
 
-// put method to save / update (upsert)
+  // put method to save / update (upsert)
   Future<void> upsertNote(String userKey, NoteModel note) async {
     final box = await _getNotesBox(userKey);
     await box.put(note.uuid, note);
@@ -23,5 +23,10 @@ class NoteLocal {
       for (var note in notes) note.uuid: note,
     };
     await box.putAll(notesMap);
-  } 
+  }
+
+  Future<void> deleteNote(String userKey, String uuid) async {
+    final box = await _getNotesBox(userKey);
+    await box.delete(uuid);
+  }
 }

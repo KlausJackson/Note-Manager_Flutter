@@ -16,7 +16,7 @@ abstract class NoteRepository {
   // (with changes like updatedAt timestamp or trimmed fields)
   // save that note from server to local db
   // because server is source of truth
-  Future<void> deleteNote(String? uuid);
-  Future<void> restoreNote(String? uuid);
-  Future<void> permanentlyDeleteNote(String? uuid);
+  Future<bool> deleteNote(Note note);
+  Future<bool> restoreNote(Note note);
+  Future<bool> permanentlyDeleteNote(Note note);
 }

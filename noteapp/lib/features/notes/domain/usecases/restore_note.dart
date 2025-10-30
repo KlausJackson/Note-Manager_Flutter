@@ -6,6 +6,6 @@ class RestoreNote {
   RestoreNote({required this.noteRepository});
 
   Future<void> call(Note note) async {
-    await noteRepository.restoreNote(note.uuid);
+    await noteRepository.restoreNote(note);
   }
 }

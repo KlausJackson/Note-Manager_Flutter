@@ -110,6 +110,10 @@ class NoteRepositoryImpl implements NoteRepository {
     if (await networkInfo.isConnected) {
       try {
         noteToSave = await apiCall(noteModel);
+        await authLocal.updateLastSynced(
+          user,
+          DateTime.now().toIso8601String(),
+        );
       } catch (e) {
         // print("API action failed");
       }
@@ -169,15 +173,14 @@ class NoteRepositoryImpl implements NoteRepository {
     return {'notes': notes, 'total': localNotes.length};
   }
 
-  // SYNC FAILED
   @override
   Future<void> syncNotes() async {
-    if (!await networkInfo.isConnected) {
+    final user = await _getCurrentUser();
+    if (!await networkInfo.isConnected || user == 'default') {
       return;
     }
 
     // 2. PREPARE DATA
-    final user = await _getCurrentUser();
     final lastSyncedAt = (await authLocal.getLastSynced(user));
 
     final List<NoteModel> allLocalNotes = await noteLocal.getNotes(user);
@@ -227,28 +230,87 @@ class NoteRepositoryImpl implements NoteRepository {
     }
   }
 
-  // DELETE, PERMANENT DELETE, RESTORE, GET TRASHED
-  @override
-  Future<void> deleteNote(String? uuid) async {
-    // isDeleted = true
+  Future<void> _actionDeletedNotes(
+    Note note,
+    Function apiCall,
+    bool isDeleted,
+  ) async {
+    final user = await _getCurrentUser();
+    if (await networkInfo.isConnected) {
+      try {
+        await apiCall(note.uuid);
+        await authLocal.updateLastSynced(
+          user,
+          DateTime.now().toIso8601String(),
+        );
+      } catch (e) {
+        // print("API action on deleted notes failed");
+      }
+    }
+
+    final deletedNote = NoteModel(
+      uuid: note.uuid,
+      title: note.title,
+      body: note.body
+          .map(
+            (b) => BlockModel(type: b.type, text: b.text, checked: b.checked),
+          )
+          .toList(),
+      isPinned: note.isPinned,
+      tagUUIDs: note.tagUUIDs,
+      isDeleted: isDeleted,
+      updatedAt: DateTime.now(),
+    );
+    
+    await noteLocal.upsertNote(user, deletedNote);
   }
 
   @override
-  Future<void> permanentlyDeleteNote(String? uuid) async {
-    // xoa khoi server va local
+  Future<bool> deleteNote(Note note) async {
+    await _actionDeletedNotes(note, noteRemote.deleteNote, true);
+    return true;
+  }
+
+  @override
+  Future<bool> restoreNote(Note note) async {
+    _actionDeletedNotes(note, noteRemote.restoreNote, false);
+    return true;
+  }
+
+  @override
+  Future<bool> permanentlyDeleteNote(Note note) async {
+    final user = await _getCurrentUser();
+    if (await networkInfo.isConnected) {
+      try {
+        await noteRemote.permanentlyDeleteNote(note.uuid);
+        await authLocal.updateLastSynced(
+          user,
+          DateTime.now().toIso8601String(),
+        );
+      } catch (e) {
+        // print("API delete failed");
+      }
+    }
+    await noteLocal.deleteNote(user, note.uuid);
+    return true;
   }
 
   @override
   Future<List<Note>> getTrashedNotes() async {
-    // su dung _filterAndSortLocalNotes voi isDeleted = true cho tien dung
     final user = await _getCurrentUser();
     final localNotes = await noteLocal.getNotes(user);
-    final trashedNotes = _filterAndSortLocalNotes(localNotes, isDeleted: true);
-    return trashedNotes;
-  }
+    List<Note> trashedNotes = _filterAndSortLocalNotes(
+      localNotes,
+      isDeleted: true,
+    );
 
-  @override
-  Future<void> restoreNote(String? uuid) async {
-    // isDeleted = false
+    if (await networkInfo.isConnected && user != 'default') {
+      try {
+        trashedNotes = await noteRemote.getTrashedNotes();
+      } catch (e) {
+        // print("API get trashed notes failed");
+      }
+    }
+    return trashedNotes;
   }
 }

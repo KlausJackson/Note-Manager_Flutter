@@ -48,7 +48,6 @@ class _SearchBarFilterState extends State<SearchBarFilter> {
           children: [
             IconButton(
               icon: const Icon(Icons.search),
-              tooltip: 'Search',
               onPressed: _triggerSearch,
             ),
             const SizedBox(width: 8),
@@ -56,7 +55,7 @@ class _SearchBarFilterState extends State<SearchBarFilter> {
               child: TextField(
                 controller: _searchController,
                 decoration: const InputDecoration(
-                  hintText: 'Search notes...',
+                  hintText: 'Tìm kiếm...',
                   border: InputBorder.none,
                 ),
                 onSubmitted: (_) => _triggerSearch(),

@@ -106,7 +106,7 @@ class _NoteBodyEditorState extends State<NoteBodyEditor> {
       controller: widget.bodyControllers[index],
       focusNode: _bodyFocusNodes[index],
       decoration: const InputDecoration(
-        hintText: 'Noi dung...',
+        hintText: 'Nội dung...',
         border: InputBorder.none,
       ),
       keyboardType: TextInputType.multiline,
@@ -135,7 +135,7 @@ class _NoteBodyEditorState extends State<NoteBodyEditor> {
             controller: widget.bodyControllers[index],
             focusNode: _bodyFocusNodes[index],
             decoration: const InputDecoration(
-              hintText: 'Noi dung...',
+              hintText: 'Nội dung...',
               border: InputBorder.none,
             ),
             style: TextStyle(

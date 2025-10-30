@@ -137,11 +137,11 @@ class _NoteEditPageState extends State<NoteEditPage> {
     });
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Da luu.')));
+    ).showSnackBar(const SnackBar(content: Text('Đã lưu.')));
   }
 
   String _formatDateTime(DateTime? dateTime) {
-    if (dateTime == null) return 'Chua cap nhat';
+    if (dateTime == null) return 'Chưa cập nhật';
     final formatted =
         '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
     return formatted;
@@ -151,11 +151,11 @@ class _NoteEditPageState extends State<NoteEditPage> {
     if (widget.note != null) {
       ShowDialogs.showConfirmationDialog(
         context: context,
-        title: 'Xoa ghi chu?',
-        message: 'Ban co chac chan muon xoa khong?',
-        confirmText: 'Xoa',
+        title: 'Xóa ghi chú?',
+        message: 'Bạn có chắc chắn muốn xóa không?',
+        confirmText: 'Xóa',
         onConfirm: () {
-          context.read<NoteProvider>().deleteNote(widget.note!.uuid);
+          context.read<NoteProvider>().deleteNote(widget.note!);
           Navigator.of(context).pop(true);
         },
       );
@@ -171,7 +171,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
           spacing: 32.0,
           children: [
             Text(
-              widget.note != null ? 'Chinh sua ghi chu' : 'Tao ghi chu',
+              widget.note != null ? 'Chỉnh sửa ghi chú' : 'Tạo ghi chú',
               style: const TextStyle(fontSize: 16),
             ),
             if (widget.note != null) // Show last updated time in edit mode
@@ -190,13 +190,11 @@ class _NoteEditPageState extends State<NoteEditPage> {
           if (widget.note != null)
             IconButton(
               icon: const Icon(Icons.delete_outline),
-              tooltip: 'Xoa',
               onPressed: _deleteNote,
             ),
           // --- SAVE BUTTON ---
           IconButton(
             icon: const Icon(Icons.save),
-            tooltip: 'Luu',
             onPressed: _isChanged ? _saveNote : null,
           ),
         ],
@@ -209,7 +207,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(
-                hintText: 'Tieu de...',
+                hintText: 'Tiêu đề...',
                 border: InputBorder.none,
               ),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

@@ -6,6 +6,6 @@ class DeleteNote {
   DeleteNote({required this.noteRepository});
 
   Future<void> call(Note note) async {
-    await noteRepository.deleteNote(note.uuid);
+    await noteRepository.deleteNote(note);
   }
 }

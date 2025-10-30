@@ -23,12 +23,10 @@ class EditorToolbar extends StatelessWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.text_fields),
-            tooltip: 'Them van ban',
             onPressed: onAddTextBlock,
           ),
           IconButton(
             icon: const Icon(Icons.check_box_outlined),
-            tooltip: 'Them checklist',
             onPressed: onAddChecklistBlock,
           ),
         ],

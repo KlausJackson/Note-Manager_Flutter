@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:noteapp/core/network/api_client.dart';
 import 'package:noteapp/features/notes/data/models/note_model.dart';
 
@@ -10,7 +12,7 @@ class NoteRemote {
   ) async {
     final response = await apiClient.get(
       '/notes',
-      queryParameters: queryParameters
+      queryParameters: queryParameters,
     );
     return response['data'];
   }
@@ -39,5 +41,26 @@ class NoteRemote {
     }
   }
 
-  // TODO: Implement deleteNote, getTrashedNotes, permanentlyDeleteNote, restoreNote.
+  // Implement deleteNote, getTrashedNotes, permanentlyDeleteNote, restoreNote.
+  Future<NoteModel> deleteNote(String uuid) async {
+    final response = await apiClient.delete('/notes/$uuid');
+    return NoteModel.fromJson(response['data']);
+  }
+
+  Future<NoteModel> restoreNote(String uuid) async {
+    final response = await apiClient.put('/notes/$uuid/restore', {});
+    return NoteModel.fromJson(response['data']);
+  }
+
+  Future<List<NoteModel>> getTrashedNotes() async {
+    final response = await apiClient.get('/notes/trash');
+    return (response['data'] as List)
+        .map((json) => NoteModel.fromJson(json))
+        .toList();
+  }
+
+  Future<bool> permanentlyDeleteNote(String uuid) async {
+    final response = await apiClient.delete('/notes/trash/$uuid');
+    return response['data'];
+  }
 }

@@ -96,7 +96,7 @@ class NoteProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _status = NoteStatus.error;
-      _message = 'Failed to create note: $e';
+      _message = 'Có lỗi khi tạo ghi chú: $e';
       notifyListeners();
     }
   }
@@ -112,7 +112,7 @@ class NoteProvider with ChangeNotifier {
       _status = NoteStatus.success;
     } catch (e) {
       _status = NoteStatus.error;
-      _message = 'Failed to update note: $e';
+      _message = 'Có lỗi khi cập nhật ghi chú: $e';
       notifyListeners();
     }
   }
@@ -132,16 +132,65 @@ class NoteProvider with ChangeNotifier {
       _status = NoteStatus.success;
     } catch (e) {
       _status = NoteStatus.error;
-      _message = 'Sync failed: $e';
+      _message = 'Có lỗi khi đồng bộ hóa ghi chú: $e';
     }
     notifyListeners();
   }
 
-  Future<void> getTrashedNotes() async {}
+  Future<void> getTrashedNotes() async {
+    _status = NoteStatus.loading;
+    notifyListeners();
 
-  Future<void> deleteNote(String uuid) async {}
+    try {
+      _trashedNotes = await getTrashedNotesUsecase();
+      _status = NoteStatus.success;
+    } catch (e) {
+      _status = NoteStatus.error;
+      _message = 'Không thể lấy danh sách thùng rác ghi chú: $e';
+    }
+    notifyListeners();
+  }
 
-  Future<void> restoreNote(String uuid) async {}
+  Future<void> deleteNote(Note note) async {
+    try {
+      await deleteNoteUsecase(note);
+      notes.removeWhere((n) => n.uuid == note.uuid); // update UI
+      _totalNotes--;
+      _status = NoteStatus.success;
+      _message = 'Ghi chú được chuyển vào thùng rác.';
+    } catch (e) {
+      _status = NoteStatus.error;
+      _message = 'Xóa ghi chú thât bại: $e';
+    }
+    notifyListeners();
+  }
 
-  Future<void> permanentlyDeleteNote(String uuid) async {}
+  Future<void> restoreNote(Note note) async {
+    try {
+      await restoreNoteUsecase(note);
+      _trashedNotes.removeWhere((n) => n.uuid == note.uuid); // update UI
+      // notes.insert(0, note);
+      // totalNotes++;
+      // ???
+      _status = NoteStatus.success;
+      _message = 'Ghi chú đã được khôi phục.';
+    } catch (e) {
+      _status = NoteStatus.error;
+      _message = 'Khôi phục ghi chú thất bại: $e';
+    }
+    notifyListeners();
+  }
+
+  Future<void> permanentlyDeleteNote(Note note) async {
+    try {
+      await permanentlyDeleteNoteUsecase(note);
+      _trashedNotes.removeWhere((n) => n.uuid == note.uuid); // update UI
+      _status = NoteStatus.success;
+      _message = 'Ghi chú đã được xóa vĩnh viễn.';
+    } catch (e) {
+      _status = NoteStatus.error;
+      _message = 'Xóa vĩnh viễn ghi chú thất bại: $e';
+    }
+    notifyListeners();
+  }
 }

@@ -58,13 +58,11 @@ class Pagination extends StatelessWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.first_page),
-                  tooltip: 'First Page',
                   // Disable if on the first page.
                   onPressed: currentPage > 1 ? () => onPageChanged(1) : null,
                 ),
                 IconButton(
                   icon: const Icon(Icons.chevron_left),
-                  tooltip: 'Previous Page',
                   onPressed: currentPage > 1
                       ? () => onPageChanged(currentPage - 1)
                       : null,
@@ -72,7 +70,6 @@ class Pagination extends StatelessWidget {
                 Text('$currentPage / $totalPages'),
                 IconButton(
                   icon: const Icon(Icons.chevron_right),
-                  tooltip: 'Next Page',
                   // Disable if on the last page.
                   onPressed: currentPage < totalPages
                       ? () => onPageChanged(currentPage + 1)
@@ -80,7 +77,6 @@ class Pagination extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.last_page),
-                  tooltip: 'Last Page',
                   onPressed: currentPage < totalPages
                       ? () => onPageChanged(totalPages)
                       : null,

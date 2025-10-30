@@ -123,7 +123,6 @@ class _NotesPageState extends State<NotesPage> {
                 onPressed: () {
                   Navigator.of(context).pushNamed('/notes/create');
                 },
-                tooltip: 'Create Note',
                 child: const Icon(Icons.add),
               ),
             ),
@@ -150,7 +149,7 @@ class _NotesPageState extends State<NotesPage> {
             const Icon(Icons.note_add_outlined, size: 48, color: Colors.grey),
             const SizedBox(height: 16),
             const Text(
-              'No notes found.\nTap the + button to create one.',
+              'Chưa có ghi chú.\nNhấn nút + để tạo mới.',
               textAlign: TextAlign.center,
             ),
           ],
