@@ -25,9 +25,8 @@ Future<void> init() async {
   // --- HIVE ---
   await Hive.initFlutter();
   Hive.registerAdapter(UserModelAdapter());
-  Hive.registerAdapter(BlockModelAdapter());  
+  Hive.registerAdapter(BlockModelAdapter());
   Hive.registerAdapter(NoteModelAdapter());
-
 
   final profilesBox = await Hive.openBox<UserModel>('profiles');
   sl.registerLazySingleton<Box<UserModel>>(() => profilesBox);

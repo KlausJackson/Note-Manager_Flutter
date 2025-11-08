@@ -178,7 +178,6 @@ class NoteRepositoryImpl implements NoteRepository {
   }
 
 // still has error: notemodel is not a subtype of map string dynamic
-// suddenly fixed?
   @override
   Future<bool> syncNotes() async {
     final user = await _getCurrentUser();

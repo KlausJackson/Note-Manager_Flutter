@@ -19,9 +19,7 @@ class AuthRepositoryImpl implements AuthRepository {
         : await authRemote.register(username: username, password: password);
 
     final String token = response['data'];
-    final Map<String, dynamic> userJson = {
-      'username': username
-    };
+    final Map<String, dynamic> userJson = {'username': username};
     final userModel = UserModel.fromJson(userJson);
 
     await authLocal.saveToken(token);

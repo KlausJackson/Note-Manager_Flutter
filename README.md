@@ -1,11 +1,12 @@
-# Quan-Ly-Ghi-Chu
+# Note Manager
 
-flutter create noteapp
+```bash
+cd noteapp
+```
+
 See API requests and responses examples in [Task Manager](https://github.com/KlausJackson/Task-Manager)
 
 ## API
-
-> **Person 1**
 
 | No. | Method | Route                 | Description             |
 | --- | :----: | --------------------- | ----------------------- |
@@ -14,10 +15,6 @@ See API requests and responses examples in [Task Manager](https://github.com/Kla
 | 3   | DELETE | /api/v1/auth/me       | Delete your own account |
 | 4   |  GET   | /api/v1/sync/         | Sync data               |
 
-<hr>
-
-> **Nguyen Anh Van**
-
 | No. | Method | Route            | Description                         |
 | --- | ------ | ---------------- | ----------------------------------- |
 | 5   | POST   | /api/v1/notes    | Create a new note                   |
@@ -25,20 +22,12 @@ See API requests and responses examples in [Task Manager](https://github.com/Kla
 | 7   | GET    | /api/v1/notes/id | Get a note                          |
 | 8   | PUT    | /api/v1/notes/id | Update a note                       |
 
-<hr>
-
-> **Thai Tuan**
-
 | No. | Method | Route                    | Description                 |
 | --- | ------ | ------------------------ | --------------------------- |
 | 9   | DELETE | /api/v1/notes/id         | Delete a note               |
 | 10  | GET    | /api/v1/notes/trash      | Get all deleted notes       |
 | 11  | PUT    | /api/v1/notes/id/restore | Restore a deleted note      |
 | 12  | DELETE | /api/v1/notes/trash/id   | Permanently delete the note |
-
-<hr>
-
-> **Nguyen Truong**
 
 | No. | Method | Route           | Description                |
 | --- | ------ | --------------- | -------------------------- |
@@ -49,9 +38,7 @@ See API requests and responses examples in [Task Manager](https://github.com/Kla
 
 ## Project Architecture
 
-### NEW
-
-Chuyen sang branch clean-architecture nhe anh em.
+### Clean Architecture
 
 ```bash
 lib/
@@ -146,7 +133,7 @@ lib/
 └── main.dart
 ```
 
-### OLD
+### MVVC
 
 ```bash
 lib/
@@ -196,24 +183,12 @@ lib/
 
 ### Luồng Dữ Liệu và Tính Năng
 
-1.  **Fresh Start (Khởi đầu mới):** Người dùng mới có thể tạo ghi chú (notes) và thẻ (tags) mà không cần tài khoản. Dữ liệu được lưu trữ cục bộ trên thiết bị, liên kết với một hồ sơ mặc định chỉ có ở local. Để xóa một tài khoản, người dùng phải đăng nhập, nhập lại mật khẩu để xác nhận. Sau khi xóa thành công, người dùng sẽ cần đăng nhập vào một tài khoản khác hoặc có thể tiếp tục sử dụng ứng dụng ngoại tuyến (offline) mà không cần đăng nhập.
-2.  **Optional Registration (Đăng ký tùy chọn):** Người dùng có thể chọn đăng ký tài khoản. Khi đăng ký, ứng dụng sẽ kích hoạt một quy trình đồng bộ hóa (sync), đẩy tất cả dữ liệu được tạo cục bộ lên máy chủ và liên kết nó với tài khoản mới.
+1.  **Fresh Start:** Người dùng mới có thể tạo ghi chú (notes) và thẻ (tags) mà không cần tài khoản. Dữ liệu được lưu trữ cục bộ trên thiết bị, liên kết với một hồ sơ mặc định chỉ có ở local. Để xóa một tài khoản, người dùng phải đăng nhập, nhập lại mật khẩu để xác nhận. Sau khi xóa thành công, người dùng sẽ cần đăng nhập vào một tài khoản khác hoặc có thể tiếp tục sử dụng ứng dụng ngoại tuyến (offline) mà không cần đăng nhập.
+2.  **Optional Registration:** Người dùng có thể chọn đăng ký tài khoản. Khi đăng ký, ứng dụng sẽ kích hoạt một quy trình đồng bộ hóa (sync), đẩy tất cả dữ liệu được tạo cục bộ lên máy chủ và liên kết nó với tài khoản mới.
 
-## Presentation (Lớp Giao Diện)
+## Presentation
 
-### Widgets (Các thành phần nhỏ)
-
-| Custom Widget           | Description (Mô tả)                                                                         |
-| ----------------------- | ------------------------------------------------------------------------------------------- |
-| **Note Card**           | Một thẻ (card) hiển thị bản xem trước của tiêu đề, nội dung và các thẻ của một ghi chú.    |
-| **Tag Chip**            | Một widget nhỏ hình "viên thuốc" hiển thị tên của một thẻ; có thể chọn được. |
-| **Custom ShowDialog**   | Các dialog tùy chỉnh cho mọi trường hợp sử dụng: hủy bỏ, tạo mới, xác nhận, v.v. |
-
-### Screens (Các màn hình)
-
-Sử dụng `BottomNavigation` để chuyển đổi giữa `Note List`, `Tag List`, và `Trashed List`. Hoặc dùng menu, sao cũng được.
-
-| Component           | API                                                                                         | Standard Widgets                                                                                         | Reusable Widgets                 | Description (Mô tả)                                                                                                                                                                             |
+| Component           | API                                                                                         | Standard Widgets                                                                                         | Reusable Widgets                 | Description          |
 | ------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Login; Register** | POST /api/v1/auth/register; POST /api/v1/auth/login                                         | TextField, TextButton, CircularProgressIndicator, ListView, Card                                         | CustomTextField                  | Input validation. Bao gồm một danh sách các hồ sơ người dùng đã lưu cục bộ bên dưới biểu mẫu để chọn đăng nhập nhanh.                                                            |
 | **Notes List**      | GET /api/v1/notes                                                                           | ListView / GridView, FloatingActionButton, RefreshIndicator, CheckboxListTile, CircularProgressIndicator | Note Card | - Thanh `Search & Filter`.<br>- Hiển thị ghi chú.<br>- Kéo để làm mới (Pull-to-refresh) để đồng bộ dữ liệu.<br>- `Floating Action Button` để tạo ghi chú mới. |
@@ -221,63 +196,7 @@ Sử dụng `BottomNavigation` để chuyển đổi giữa `Note List`, `Tag Li
 | **Trashed List**    | GET /api/v1/notes/trash <br>PUT /api/v1/notes/id/restore <br> DELETE /api/v1/notes/trash/id | ListView, ListTile, CheckboxListTile, AlertDialog  | Note Card | - Hiển thị các ghi chú đã xóa.<br>- Người dùng có thể khôi phục ghi chú trở lại danh sách chính hoặc xóa vĩnh viễn. |
 | **Tag List**        | POST /api/v1/tags<br>GET /api/v1/tags<br>PUT /api/v1/tags/id<br>DELETE /api/v1/tags/id       | FloatingActionButton, CheckboxListTile, ListView, ListTile, IconButton, AlertDialog, TextField       | Tag Chip                         | <ul><li>Liệt kê tất cả các thẻ của người dùng</li><li>Tạo thẻ mới</li><li>Đổi tên thẻ</li><li>Xóa thẻ thông qua dialogs</li></ul> |
 
-# Hướng Dẫn (Tutorial)
-
-## 1. Model
-
-Định nghĩa cấu trúc dữ liệu và tạo `Adapter` cho Hive.
-
-```dart
-import 'package:hive/hive.dart';
-
-part 'user.g.dart';
-
-@HiveType(typeId: 0)
-class User {
-  @HiveField(0)
-  final String username;
-  @HiveField(1)
-  String? lastSynced; // timestamp, nullable
-
-  User({required this.username, this.lastSynced});
-}
-```
-
-Chạy lệnh sau trong terminal để tạo file `user.g.dart` (chứa `UserAdapter`):
-
-```bash
-flutter pub run build_runner build
-```
-
-## 2. Local (Lưu trữ cục bộ)
-
-Bỏ comment dòng `Hive.registerAdapter(UserAdapter());` trong hàm `init()`.
-
-```dart
-  Future<Box<Note>> _getNotesTable(String currentUser) async {
-    return await Hive.openBox<Note>('notes_$currentUser');
-  }
-
-  // --- Public Methods for NoteService ---
-  Future<List<Note>> getNotes(String currentUser) async {
-    final box = await _getNotesBox(currentUser);
-    return box.values.toList();
-  }
-```
-
-## 3. Remote (Tương tác với API)
-
-...
-
-## 4. Service (Tầng logic nghiệp vụ)
-
-...
-
-## 5. Provider (Tầng quản lý state)
-
-...
-
-## 6. ShowDialog (Sử dụng Dialog tái sử dụng)
+## ShowDialog
 
 ### showInfoDialog
 

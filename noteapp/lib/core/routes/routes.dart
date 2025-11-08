@@ -6,7 +6,6 @@ import 'package:noteapp/features/notes/presentation/pages/notes_page.dart';
 import 'package:noteapp/features/notes/presentation/pages/trash_page.dart';
 import 'package:noteapp/presentation/pages/main_layout_page.dart';
 
-
 class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     if (settings.name == '/auth') {
@@ -28,8 +27,7 @@ class AppRouter {
           ),
         );
       }
-    }
-    else if (settings.name == '/notes/trash') {
+    } else if (settings.name == '/notes/trash') {
       return MaterialPageRoute(
         builder: (_) => const MainLayoutPage(title: 'Trash', body: TrashPage()),
       );
